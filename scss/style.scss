@@ -92,6 +92,20 @@ img {
     height: 300px;
     margin: 0 auto;
 }
+form {
+    input{
+        width: 80%;
+
+    }
+   button{
+    float:right;
+    height: 1.5em;
+   }
+    width:100%;
+    
+    margin-bottom:.5em;
+    z-index:2;
+}
 
 .item {
     width: 100%;
@@ -104,6 +118,10 @@ img {
         float: left;
         border: 1px solid #a9a9a9;
         position: relative;
+        img {
+            width: 100%;
+            height:100%;
+        }
 
         .play-button{
         position:absolute;
@@ -115,6 +133,12 @@ img {
         height: 66%;
         top:0;
         transform: translate(15%, 20%);
+        &:focus {
+        background-image: url("../images/ic_pause_circle_outline_white_24dp.png");
+        background-repeat: no-repeat;
+        background-size: 50%;
+        z-index: 10;
+        }
     }
 
     }
@@ -124,6 +148,19 @@ img {
         height: 33%;
         float: right;
         border: 1px solid #a9a9a9;
+        text-align: center;
+        text-overflow: none;
+        img {
+            float: left;
+            height:20px;
+            
+                    }
+       div img {
+            float: right;
+            top:0;
+            height: 20px;
+           
+        }
     }
     .play-time {
         width: 75%;
@@ -139,11 +176,10 @@ img {
         border: 1px solid #a9a9a9;
         span {
        
-            
             width: 25%;
             height: 100%;
             float: left;
-                        font-size: 1em;
+            font-size: .75em;
             color: black;
             font-family: Roboto,
             helvetica;
@@ -163,4 +199,25 @@ img {
 
         }
     }
+}
+.track-bar{
+   border:1px solid black;
+   width: 60%;
+   height: .5em;
+   margin: auto;
+   
+   border-radius: 5px;
+
+}
+
+.track-circle {
+   width: 1em;
+   background-color: gray;
+   height: .5em;
+   border-radius:.5em;
+   z-index: 2;
+}
+.duration {
+    float:right;
+    width: 15%;
 }
