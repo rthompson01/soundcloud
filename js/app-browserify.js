@@ -44,7 +44,9 @@ class SoundcloudItem extends React.Component {
      this.props.item
      this.state = {
         playing: false,
-        sound: null
+        sound: null,
+        volume:1,
+        time: 0,
      }
 
  }
@@ -53,31 +55,108 @@ class SoundcloudItem extends React.Component {
 
      this.setState({playing: !this.state.playing})
      
-     var play_button = React.findDOMNode(this.refs['play-button'])
-     var track_id = this.props.item.id
+     var track_id = this.props.item.id,
+         play_button = React.findDOMNode(this.refs['play-button']),
+         start_time = React.findDOMNode(this.refs.start);
      
-     console.log(track_id)
+     console.log(track_id);
      
+     var stopWatch = {}
 
      if (this.state.playing === true) {
-            this.state.sound.pause()
+            this.state.sound.pause();
+            play_button.className = "play-button"
+            clearInterval(stopWatch.stopperStarter)
+            console.log(this.state.time)
+
     } else  {
-        if(!this.state.sound)
-            SC.stream(`/tracks/${track_id}`, (soundObj) => {
+
+        stopWatch.stopperStarter = setInterval( ()=> {
+                ++this.state.time 
+
+                }, 1000)
+
+        if(!this.state.sound) {
+
+            play_button.className = "play-button show-pause";
+            var track = `/tracks/${track_id}`;
+
+               
+             
+                SC.stream(track, (soundObj) => {
+                // soundObj.play();
+
+                    this.setState({sound: soundObj, volume: 0.2});
+                     
+                     this.state.sound.play()      
+             })
+
+              } else {
+                         this.state.sound.play();
+                }
+            }
+
+        } 
+    
+    
+    _replay(e) {
+        console.log('replay clicked')
+        var track_id = this.props.item.id
+        if(this.state.sound){
+            this.state.sound.stop()
+        }
+     
+        SC.stream(`/tracks/${track_id}`, (soundObj) => {
                 // soundObj.play();
 
                 this.setState({sound: soundObj});
                  this.state.sound.play()
 
-            });
-        
-        else {
-            this.state.sound.play()
+        });
+
+    }
+    _volumeUp(e) {
+        console.log("up Clicked")
+         var track_id = this.props.item.id
+            if(this.state.sound){
+            var v=this.state.volume;
+            if(v <1) {
+                    v += 0.2;
+            this.state.sound.setVolume(v)
+            this.setState({volume: v})
+         }
+     }
+}
+ _volumeDown(e) {
+        console.log("down Clicked")
+         var track_id = this.props.item.id
+            if(this.state.sound){
+            var v=this.state.volume;
+            if(v > 0) 
+            {
+                    v -= 0.2;
+            this.state.sound.setVolume(v)
+            this.setState({volume: v})
+         }
+     }
+}
+
+    _mute(e) {
+        console.log("mute clicked")
+        var track_id = this.props.item.id
+
+        if(this.state.sound) {
+            var v;
+            if(this.state.volume === 0){
+                v =1
+            } else {
+                v = 0
+            }
+
+            this.state.sound.setVolume(v)
+            this.setState({volume: v})
         }
     }
-
-    }
-
 
      render() {
         var url = this.props.item.get('permalink_url'),
@@ -95,103 +174,51 @@ class SoundcloudItem extends React.Component {
             <div className="canvas"> 
                 
         <div className="item"> 
-                    <div className="play">
-                         {img}
-                     <div onClick={(e)=> this._streamAndStop(e)} className="play-button" ref="play-button"> </div>
-                         </div>
+                        <div className="play">
+                            <div className="play-img">
+                                {img}
+                             <div className="play-button-container">
+                                <div onClick={(e)=> this._streamAndStop(e)} className="play-button" ref="play-button"> </div>
+                                     </div>
+                            </div>
+                    </div>
                      <div className="song-title">
-                     <img src="../images/ic_replay_black_24dp.png"/>
-                      <div className="volumeUp">
-                        <img src="../images/ic_volume_up_black_24dp.png"/>
+                     <div refs="replay" className="replay" onClick={(e)=> this._replay(e)}>
+                     <img src="../images/ic_replay_black_24dp.png"/> 
+                     </div>
+
+                      <div refs="Up" className="volumeUp" onClick={(e)=> this._volumeUp(e)}>
+                        <img refs="Up" src="../images/ic_volume_up_black_24dp.png"/>
                         </div>
 
-                        <div className="volumeDown">
-                        <img src="../images/ic_volume_down_black_24dp.png"/>
+                        <div refs="Down"className="volumeDown" onClick={(e) => this._volumeDown(e)}>
+                        <img refs="Down" src="../images/ic_volume_down_black_24dp.png"/>
                         </div>
                         
-                        <div className="mute">
-                        <img src="../images/ic_volume_off_black_24dp.png"/>
+                        <div refs="mute" className="mute" onClick={(e)=> this._mute(e)}>
+                        <img refs="mute" src="../images/ic_volume_off_black_24dp.png"/>
                         </div>
 
                         {title}
                        
                     </div> 
-                 <div className ="play-time"> 0:00 <div className="duration"> { d.getUTCMinutes() + ':' + d.getUTCSeconds() } </div> <div className="track-bar"> <div className="track-circle" onMouseDown={(e)=> this._scrub(e)}> </div> </div> </div>
-                <div className="icons">      
-                     <span className="cloud"> </span>
-                     <span className="buy"> BUY </span>
-                     <span className= "play-number">  {playCount} </span>
-                     <span className="likes"> {favCount} </span>
+                 <div className ="play-time"> <div className="start-time" ref="start"/> <div className="duration"> { d.getUTCMinutes() + ':' + d.getUTCSeconds() } </div> <div className="track-bar"> <div className="track-circle" onMouseDown={(e)=> this._scrub(e)}> </div> </div> </div>
+                <div className="icons">  
+                <div className="icon-container">    
+                     <div className="cloud"> </div>
+                     </div>
+                     <div className="icon-container"> 
+                     <div className="buy"> <span> BUY </span> </div>
+                     </div>
+                     <div className="icon-container"> 
+                     <div className= "play-number"> <span> {playCount} </span> </div>
+                     </div>
+                     <div className="icon-container"> 
+                     <div className="likes"> <span> {favCount} </span> </div>
+                     </div>
                  </div>
         </div>
         </div>
         )
 
     }
-
-}
-
-
-
-
-class SoundcloudView extends React.Component {
-    constructor(props) {
-        super(props)
-        this.props.items.on('sync', ()=> this.forceUpdate() )
-    }
-
-     _updateAndSearch(e) {
-        // e.preventDefault()
-        var input = React.findDOMNode(this.refs.search)
-        var search_term = input.value
-        // add letter to search bar value before refreshing results
-        var jqueryInput = $("#srchBar")
-        console.log(jqueryInput)
-        console.log('here comes the input value')
-        console.log(search_term)
-        var existingText = jqueryInput.html()
-        jqueryInput.html(existingText + search_term)
-        // done adding
-        collection.search_value = search_term;
-        console.log('fetching searched data')
-        collection.fetch().then((data)=>console.log(data))
-        }
-    render() {
-        return ( 
-            <div className="canvas">
-            <div className="form">
-            <form onKeyUp={(e)=> this._updateAndSearch(e)}>
-                    <button> Search </button>
-                    <input className="search" type="text" id="srchBar" ref='search' placeholder="Search"/>
-                    
-                </form>
-                </div>
-                    <ul> 
-                        {this.props.items.map((i)=> <SoundcloudItem key={i.id} item={i} />)}
-                    </ul>
-            </div>
-        )
-    }
-}
-
-var collection = new SoundcloudCollection
-collection.search_value = 'beatles'
-
-React.render( <SoundcloudView title="SoundCloud" items={collection} /> , qs('.container'))
-collection.fetch().then((data) => { 
-        console.log(data); })
-
-
- //
- //        
- //        <div class ="play-time"> </div>
- //        <div class="icons"> 
- //        <span class="cloud"> <i class="large mdi-editor-insert-chart"> </i> </span>
- //        <span class="buy"> </span>
- //        <span class-"play-number"> </span>
- //        <span class="likes"> </span>
- //        </div>
-
-
- //        </div>
- //    </div>
